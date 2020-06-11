@@ -3,27 +3,14 @@ from django.contrib.auth import password_validation
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth import get_user_model
+from .models import UserProfile
 User = get_user_model()
 
 # LOGIN
 class UserLoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=300, required=True)
     password = serializers.CharField(required=True, write_only=True)
-# CREATE TOKEN (FOR RESPONSE DATA)
-class AuthUserSerializer(serializers.ModelSerializer):
-    auth_token = serializers.SerializerMethodField()
 
-    class Meta:
-         model = User
-         fields = ('id', 'name', 'email', 'is_active', 'is_staff', 'auth_token')
-         read_only_fields = ('id', 'is_active', 'is_staff')
-    def get_auth_token(self, obj):
-        refresh = RefreshToken.for_user(user=obj)
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
-        
 # CREATE USER
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,7 +26,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         password_validation.validate_password(value)
         return value
-
+# CHANGE PASSWORD
 class PasswordChangeSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
@@ -53,10 +40,30 @@ class PasswordChangeSerializer(serializers.Serializer):
         password_validation.validate_password(value)
         return value
 
-
-
 class UserProfileUpdateSerializer(serializers.Serializer):
-    pass
+    class Meta:
+        model = UserProfile
+        fields = ('image','bio')
+
+    def update(self, instance, validated_data):
+        instance.image = validated_data.get('image', instance.image)
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.save()
+        return instance
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name='users:user-detail')
+
+    class Meta:
+        model = User
+        fields = ['id', 'url', 'name', 'email']
+
+class ProfileSerializer(serializers.HyperlinkedModelSerializer):
+    user = serializers.ReadOnlyField(source='user.email')
+
+    class Meta:
+        model = UserProfile
+        fields = ['user','image','bio']
 
 class EmptySerializer(serializers.Serializer):
     pass

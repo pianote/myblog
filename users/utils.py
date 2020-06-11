@@ -12,3 +12,6 @@ def get_and_authenticate_user(email, password):
 def create_user_account(email, password, name, **kwargs):
     user = User.objects.create_user(email=email, password=password, name=name, **kwargs)
     return user
+
+
+

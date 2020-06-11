@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -130,6 +131,9 @@ USE_L10N = True
 USE_TZ = True
 
 
+AUTH_USER_MODEL = 'users.UserAccount'
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
@@ -163,10 +167,15 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5
 }
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
 # If True, the whitelist will not be used and all origins will be accepted. Defaults to False.
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Assigns read+write to user, and read only to group
 FILE_UPLOAD_PERMISSIONS = 0o640
-
-AUTH_USER_MODEL = 'users.UserAccount'
