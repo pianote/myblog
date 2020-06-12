@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
     'users.apps.UsersConfig',
 ]
 
@@ -162,6 +164,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5
@@ -172,6 +175,15 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
+}
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': 'users/password_reset/confirm/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
+    'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
+    'ACTIVATION_URL': '#/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': False,
+    'SERIALIZERS': {},
 }
 
 # If True, the whitelist will not be used and all origins will be accepted. Defaults to False.
