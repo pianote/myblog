@@ -26,6 +26,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def validate_password(self, value):
         password_validation.validate_password(value)
         return value
+
 # CHANGE PASSWORD
 class PasswordChangeSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True)
@@ -40,6 +41,14 @@ class PasswordChangeSerializer(serializers.Serializer):
         password_validation.validate_password(value)
         return value
 
+# RESET PASSWORD
+# class PasswordResetSerializer(serializers.Serializer):
+#     uid = serializers.CharField(required=True)
+#     token = serializers.CharField(required=True)
+#     new_password = serializers.CharField(required=True)
+#     re_new_password = serializers.CharField(required=True)
+    
+# UPDATE PROFILE
 class UserProfileUpdateSerializer(serializers.Serializer):
     class Meta:
         model = UserProfile
@@ -51,12 +60,13 @@ class UserProfileUpdateSerializer(serializers.Serializer):
         instance.save()
         return instance
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='users:user-detail')
+### READ ONLY
+# class UserSerializer(serializers.HyperlinkedModelSerializer):
+#     url = serializers.HyperlinkedIdentityField(view_name='users:user-detail')
 
-    class Meta:
-        model = User
-        fields = ['id', 'url', 'name', 'email']
+#     class Meta:
+#         model = User
+#         fields = ['id', 'url', 'name', 'email']
 
 class ProfileSerializer(serializers.HyperlinkedModelSerializer):
     user = serializers.ReadOnlyField(source='user.email')
