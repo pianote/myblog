@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+    'ckeditor',
+    'ckeditor_uploader',
     'users.apps.UsersConfig',
+    'blog.apps.BlogConfig',
 ]
 
 MIDDLEWARE = [
@@ -167,7 +170,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 5
+    'PAGE_SIZE': 3
 }
 
 SIMPLE_JWT = {
@@ -184,7 +187,20 @@ DJOSER = {
     'ACTIVATION_URL': '#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': False,
     'SERIALIZERS': {},
+    'HIDE_USERS': True,
 }
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': None,
+        'toolbarCanCollapse': True,
+        # 'skin': 'kama',
+    },
+
+}
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_IMAGE_BACKEND = 'pillow'
+CKEDITOR_RESTRICT_BY_USER = True
 
 # If True, the whitelist will not be used and all origins will be accepted. Defaults to False.
 CORS_ORIGIN_ALLOW_ALL = True
