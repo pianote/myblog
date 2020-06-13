@@ -1,4 +1,5 @@
 from django.core.exceptions import ImproperlyConfigured
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, renderers
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -28,3 +29,14 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny,] #shoule be authenticated
+    serializer_class = serializers.CommentSerializer
+    queryset = Comment.objects.all().order_by('-created_date')
+
+    # def perform_create(self, serializer):
+    #     # post = get_object_or_404(Post, slug=slug)
+    #     serializer.save(comment_author=self.request.user)
+
+    
