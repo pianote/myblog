@@ -13,23 +13,7 @@ from .permissions import IsOwnerOrReadOnly
 
 User = get_user_model()
 
-# class UserViewSet(viewsets.ReadOnlyModelViewSet):
-#     """
-#     This "ReadOnlyModelViewSet" viewset automatically provides `list` and `detail` actions.
-#     """
-#     permission_classes = [AllowAny, ]
-#     queryset = User.objects.all()
-#     serializer_class = serializers.UserSerializer
-
-class ProfileAPIView(RetrieveAPIView):
-    """
-    Provides get, put and patch method handlers.
-    """
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
-    queryset = UserProfile.objects.all()
-    serializer_class = serializers.ProfileSerializer
-
-class AuthViewSet(viewsets.GenericViewSet):
+class AuthViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny, ]
     serializer_class = serializers.EmptySerializer
     serializer_classes = {
@@ -37,7 +21,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         'register': serializers.UserRegisterSerializer,
         'logout': serializers.EmptySerializer,
         'password_change': serializers.PasswordChangeSerializer,
-        'profile_update': serializers.UserProfileUpdateSerializer,
+        'profile': serializers.ProfileSerializer,
         'refresh': TokenRefreshSerializer,
     }
     def get_serializer_class(self):
@@ -46,6 +30,7 @@ class AuthViewSet(viewsets.GenericViewSet):
 
         if self.action in self.serializer_classes.keys():
             return self.serializer_classes[self.action]
+            
         return super().get_serializer_class()
 
     # LOGIN VIEW    
@@ -86,16 +71,17 @@ class AuthViewSet(viewsets.GenericViewSet):
         request.user.save()
         data = {'success': 'Sucessfully updated password'}
         return Response(data=data, status=status.HTTP_204_NO_CONTENT)
-
-    #PROFILE UPDATE VIEW:
-    @action(methods=['PUT'], detail=False, permission_classes=[IsAuthenticated, IsOwnerOrReadOnly])
-    def profile_update(self, request):
-        profile = UserProfile.objects.get(user=request.user)
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.update(profile, serializer.validated_data)
-        data = {'success': 'Sucessfully updated profile'}
-        return Response(data=data, status=status.HTTP_200_OK)
+    
+    #PROFILE VIEW:
+    @action(methods=['GET', 'PUT', 'PATCH'], detail=False, permission_classes=[IsAuthenticated, IsOwnerOrReadOnly])
+    def profile(self, request, *args, **kwargs):
+        self.get_object = lambda: self.request.user.userprofile
+        if request.method == "GET":
+            return self.retrieve(request, *args, **kwargs)
+        elif request.method == "PUT":
+            return self.update(request, *args, **kwargs)
+        elif request.method == "PATCH":
+            return self.partial_update(request, *args, **kwargs)
 
     #REFRESH TOKEN
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny, ])
