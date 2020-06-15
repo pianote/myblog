@@ -19,16 +19,22 @@ class Post(models.Model):
     photo_1 = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True)
     photo_2 = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True)
     photo_3 = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True)
-    
-    def publish(self):
-        self.is_published = True
-        self.date_posted = timezone.now()
-        self.save()
-        pass
+
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = text.slugify(self.title)
+            slug = text.slugify(self.title)
+            if Post.objects.filter(slug=slug):
+                queryset = Post.objects.all()
+                slug_list = [post.slug for post in [*queryset]]
+                for item in slug_list:
+                    if slug in slug_list:
+                        last_word = slug.split('-')[-1] #str or int
+                        try:
+                            slug = '-'.join([slug.rsplit('-',1)[0],str(int(last_word)+1)])
+                        except:
+                            slug = '-'.join([slug,'1'])
+            self.slug = slug
         return super(Post, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -36,10 +42,11 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post,on_delete = models.CASCADE,related_name="comments")
-    comment_author = models.ForeignKey(User, on_delete = models.SET_NULL, null=True)
-    comment_content = models.TextField(max_length = 500)
+    author = models.ForeignKey(User, on_delete = models.SET_NULL, null=True)
+    comment_content = models.TextField()
     created_date = models.DateTimeField(default=timezone.now)
-    approved_comment = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False, verbose_name='Approved')
+
     
     class Meta:
         ordering = ['-created_date']
@@ -50,4 +57,17 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.comment_content
-    
+
+class Reply(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='replies')
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    reply_content = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)
+    is_approved = models.BooleanField(default=True, verbose_name='Approved')
+
+    class Meta:
+        ordering = ['-created_date']
+        verbose_name_plural = 'Replies'
+
+    def __str__(self):
+        return self.reply_content
