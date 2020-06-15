@@ -5,22 +5,17 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrReadOnly
-from .models import Post, Comment
+from .models import Post, Comment, Reply
 from . import serializers
 
 class PostViewSet(viewsets.ModelViewSet):
-    """
-    This "ModelViewSet" viewset automatically provides `list` and `detail` actions.
-    write permission for onwer
-    readonly permission the rest
-    """
     permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = Post.objects.all().order_by('-created_date')
    
     def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return serializers.PostDetailSerializer
-        return serializers.PostListSerializer
+        if self.action == 'list':
+            return serializers.PostListSerializer
+        return serializers.PostDetailSerializer
 
     @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
     def highlight(self, request, *args, **kwargs):
@@ -31,12 +26,17 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = [AllowAny,] #shoule be authenticated
-    serializer_class = serializers.CommentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
     queryset = Comment.objects.all().order_by('-created_date')
 
-    # def perform_create(self, serializer):
-    #     # post = get_object_or_404(Post, slug=slug)
-    #     serializer.save(comment_author=self.request.user)
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.CommentListSerializer
+        return serializers.CommentDetailSerializer
+
+class ReplyViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Reply.objects.all().order_by('-created_date')
+    serializer_class = serializers.ReplyListSerializer
 
     
