@@ -19,15 +19,16 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.conf.urls.static import static
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
     path('', include('djoser.urls')),
-    path('', include('djoser.urls.authtoken')),
+    # path('', include('djoser.urls.authtoken')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('users/', include('users.urls')),
-    path('blog/', include('blog.urls')),
+    path('users/', include('users.urls', namespace='users')),
+    path('blog/', include('blog.urls',namespace='blog')),
+    
 ]
 
 if settings.DEBUG:
