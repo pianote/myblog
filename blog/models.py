@@ -20,7 +20,6 @@ class Post(models.Model):
     photo_2 = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True)
     photo_3 = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True)
 
-
     def save(self, *args, **kwargs):
         if not self.slug:
             slug = text.slugify(self.title)
@@ -47,7 +46,6 @@ class Comment(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_approved = models.BooleanField(default=False, verbose_name='Approved')
 
-    
     class Meta:
         ordering = ['-created_date']
 
@@ -71,3 +69,19 @@ class Reply(models.Model):
 
     def __str__(self):
         return self.reply_content
+
+
+class Like(models.Model):
+    post = models.ForeignKey(Post,on_delete = models.CASCADE,related_name="choices")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    choice = models.BooleanField(default=False, verbose_name='like')
+    created_date = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints =  [
+            models.UniqueConstraint(fields=['post','author','choice'], name='preference'),
+        ]
+        verbose_name = 'Preference'
+    
+    def __str__(self):
+        return "{} : {} : {}".format(self.post,self.author,'like' if self.choice==True else None)

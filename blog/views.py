@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from .permissions import IsOwnerOrReadOnly
-from .models import Post, Comment, Reply
+from .models import Post, Comment, Reply, Like
 from . import serializers
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -39,4 +39,24 @@ class ReplyViewSet(viewsets.ModelViewSet):
     queryset = Reply.objects.all().order_by('-created_date')
     serializer_class = serializers.ReplyListSerializer
 
-    
+from rest_framework import mixins
+
+class LikeViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    queryset = Like.objects.all().order_by('-created_date')
+    serializer_class = serializers.LikeSerializer
+
+    def perform_create(self, serializer):
+        validated_data = serializer.validated_data
+        post = validated_data.get('post')
+        instance, created = Like.objects.get_or_create(post=post, author=self.request.user)
+        #Check if a like for this post exist
+        #create a like instance if not exist -> created == True
+        if not created: #like already exist
+            #update like instance with new data ('choice',)
+            serializer.update(instance, validated_data)
+        else:
+            serializer.save(author=self.request.user)
+
+
+

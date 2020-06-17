@@ -1,4 +1,5 @@
 env/
+generate_faker.py
 # .vscode/
 *__pycache__
 *__init__.py

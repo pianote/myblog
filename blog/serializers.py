@@ -1,5 +1,19 @@
 from rest_framework import serializers
-from .models import Post, Comment, Reply
+from .models import Post, Comment, Reply, Like
+
+class LikeSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.name')
+    
+    class Meta:
+        model = Like
+        fields = ['id','author','post','choice']
+    
+    
+    # def get_or_create(self):
+    #     defaults = self.validated_data.copy()
+    #     identifier = defaults.pop('unique_field')
+    #     return Like.objects.get_or_create(unique_field=identifier, defaults=defaults)
+
 
 class ReplyListSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.name')
@@ -38,13 +52,18 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 class PostListSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name="blog:post-detail")
     comment_count = serializers.SerializerMethodField() #serializers field type is important to use getter method
-
+    like_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = Post
-        fields = ['url','comment_count']
+        fields = ['url','comment_count', 'like_count']
     
     def get_comment_count(self, obj):
         count = Comment.objects.filter(post=obj).count()
+        return count
+
+    def get_like_count(self, obj):
+        count = Like.objects.filter(post=obj, choice=True).count()
         return count
 
 class PostDetailSerializer(serializers.HyperlinkedModelSerializer):
@@ -54,16 +73,21 @@ class PostDetailSerializer(serializers.HyperlinkedModelSerializer):
     # comments = serializers.HyperlinkedRelatedField(many=True, view_name='blog:comment-detail',read_only=True)
     comments = CommentListSerializer(many=True, read_only=True)
     # comments = CommentDetailSerializer(many=True)
+    like_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['title','author','content', 'highlight','date_posted','is_published','comments',
+        fields = ['title','author','content', 'highlight','date_posted','is_published','comments', 'like_count',
                 'photo_main','photo_1','photo_2','photo_3']
 
     def get_comments(self, obj):
         queryset = Comment.objects.filter(post=obj)
         comments = CommentListSerializer(queryset, many=True).data
         return comments
+    
+    def get_like_count(self, obj):
+        count = Like.objects.filter(post=obj, choice=True).count()
+        return count
     
     # def get_comments(self, obj):
     #     queryset = Comment.objects.filter(post=obj)
