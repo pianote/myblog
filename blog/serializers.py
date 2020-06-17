@@ -8,13 +8,6 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ['id','author','post','choice']
     
-    
-    # def get_or_create(self):
-    #     defaults = self.validated_data.copy()
-    #     identifier = defaults.pop('unique_field')
-    #     return Like.objects.get_or_create(unique_field=identifier, defaults=defaults)
-
-
 class ReplyListSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.name')
     # comment = serializers.ReadOnlyField(source='comment.comment_content')

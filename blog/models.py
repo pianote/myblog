@@ -81,7 +81,7 @@ class Like(models.Model):
         constraints =  [
             models.UniqueConstraint(fields=['post','author','choice'], name='preference'),
         ]
-        verbose_name = 'Preference'
+        verbose_name = 'Like'
     
     def __str__(self):
         return "{} : {} : {}".format(self.post,self.author,'like' if self.choice==True else None)
